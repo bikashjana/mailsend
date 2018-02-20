@@ -1,0 +1,76 @@
+plugins {
+  id 'org.hidetake.ssh' version '2.9.0'
+}
+apply plugin: 'war'
+apply plugin: 'org.hidetake.ssh'
+
+
+
+webAppDirName = 'WebContent'
+
+buildDir = 'gradle_build'
+
+
+sourceSets {
+  main {
+     java {
+	      srcDir 'src'
+     }
+     resources {
+       srcDir 'src'
+     }
+  } 
+}
+
+task createProperties(dependsOn: processResources)  {
+ doLast {
+    new File("$buildDir/version.properties").withWriter { w ->
+        Properties p = new Properties()
+	
+        p['version'] = '3.0.0'
+        p.store w, null
+    }
+}
+}
+
+classes {
+    dependsOn createProperties
+}
+
+repositories {
+   flatDir { dirs "WebContent/WEB-INF/lib","libs"}
+}
+
+ssh.settings {  
+  knownHosts = allowAnyHosts
+  
+}
+remotes {
+  webServer {
+    host = '139.59.43.84'
+    user = 'root'
+    password = 'C@mtEchL@' 
+  }
+}
+FileTree myFileTree = fileTree(dir: 'D:/CIP_Workspace/MailSendWebServices/gradle_build/libs')
+task deploy {
+  doLast {
+    ssh.run {
+	settings {  
+        pty = true
+      }
+      session(remotes.webServer) {
+     
+      execute 'rm -rf /var/lib/tomcat7/webapps/MailSendWebServices'
+        put from: myFileTree.getFiles(), into: '/var/lib/tomcat7/webapps'
+       execute 'sudo service tomcat7 restart'
+      }
+    }
+  }
+}
+
+dependencies {
+  providedCompile fileTree(dir:'WebContent/WEB-INF/lib', include:'*.jar')
+  providedCompile fileTree(dir:'libs', include:'*.jar')
+ 
+}
