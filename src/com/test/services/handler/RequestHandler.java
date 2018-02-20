@@ -26,7 +26,7 @@ public class RequestHandler {
 	public static String sendMail(@FormParam("subject") String subject,@FormParam("body") String body) 
 	{
 		String response;
-		String tocc1="bikash@thelattice.in";
+		String tocc1="bikash@thelattice.in,bikash@thelattice.in";
 		String to1 = "bikashjana2008@gmail.com";
 		Properties props = new Properties();
 		props.put("mail.smtp.host", "smtpout.secureserver.net");
